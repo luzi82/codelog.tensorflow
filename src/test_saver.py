@@ -1,4 +1,5 @@
 import tensorflow as tf
+import time
 
 def create_train():
     var0 = tf.Variable(tf.zeros([3]),dtype=tf.float32)
@@ -39,3 +40,25 @@ saver = tf.train.Saver({'var0':var0})
 saver.restore(sess,"/tmp/FZZACAGZOU")
 
 print(var0.eval(sess)) # [86.,11.,28.]
+
+sess.close()
+sess = None
+saver = None
+
+for _ in range(1000):
+    t0 = int(time.time()*1000)
+
+    with tf.Graph().as_default(): # without this, the restore time will become very slow in loop
+        var0, inData, train0 = create_train()
+        with tf.Session() as sess:
+            saver = tf.train.Saver({'var0':var0})
+
+            t1 = int(time.time()*1000)
+            saver.restore(sess,"/tmp/FZZACAGZOU")
+    #         print(var0.eval(sess)) # [86.,11.,28.]
+            saver = None
+            t2 = int(time.time()*1000)
+
+    t3 = int(time.time()*1000)
+
+    print("{},{},{}".format(t1-t0,t2-t1,t3-t2))
